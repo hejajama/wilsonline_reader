@@ -32,7 +32,7 @@ public:
     double Amplitude(double xpom, double q1[2], double q2[2]);
     double AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] );
 
-    WilsonLine& GetWilsonLine( double x, double y); // Find Wilson line that corresponds to the coordinate
+    WilsonLine& GetWilsonLine( double x, double y); // Find Wilson line at the given point (x,y) [GeV^-1]
     
     std::string InfoStr();
     
@@ -47,6 +47,13 @@ public:
 
     void SetSchwinger(bool s, double rc=0);
     void ApplyPeriodicBoundaryConditions(double q[2]); 
+
+    std::vector<int> LatticeCoordinates(double x, double y);
+    int WilsonLineCoordinate(int  xind, int yind);
+    WilsonLine& GetWilsonLine(int i) { return wilsonlines[i]; }
+
+    double X(int ix) { return xcoords[ix]; }
+    double Y(int iy) { return ycoords[iy]; }
 
 private:
     
