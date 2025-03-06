@@ -1,7 +1,7 @@
 /*
  * Diffraction at sub-nucleon scale
  * Wilson line / SU(3) matrix handling
- * Heikki Mäntysaari <mantysaari@bnl.gov>, 2015
+ * Heikki Mäntysaari <heikki.mantysaari@jyu.fi>, 2015-2025
  * Standalone class, no external dependences, please!
  */
 
@@ -128,11 +128,21 @@ WilsonLine WilsonLine::operator*(std::complex<double> t)
 
 WilsonLine WilsonLine::operator+(WilsonLine& w)
 {
+    gsl_matrix_complex *A = wline_gsl_matrix;
+    gsl_matrix_complex *B = w.GetGslMatrix();
 
-    std::cerr << "WilsonLine::operator+ not yet implemented for GSL matrix" << endl;
-    exit(1);
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            gsl_complex a_ij = gsl_matrix_complex_get(A, i, j);
+            gsl_complex b_ij = gsl_matrix_complex_get(B, i, j);
 
-    
+            gsl_complex sum = gsl_complex_add(a_ij, b_ij);  // Sum corresponding elements
+
+            gsl_matrix_complex_set(A, i, j, sum);  // Store the result in matrix C
+        }
+    }
+
+    return *this;
 
 }
 
@@ -361,6 +371,9 @@ gsl_matrix_complex* WilsonLine::GetGslMatrix()
 
 void my_gsl_complex_matrix_exponential(gsl_matrix_complex *eA, gsl_matrix_complex *A, int dimx)
 {
+    cerr << "Test my_gsl_complex_matrix_exponential before using it!" << endl;
+    exit(1);
+    /*
     int j,k=0;
     gsl_complex temp;
     gsl_matrix *matreal =gsl_matrix_alloc(2*dimx,2*dimx);
@@ -389,6 +402,7 @@ void my_gsl_complex_matrix_exponential(gsl_matrix_complex *eA, gsl_matrix_comple
         }
     gsl_matrix_free(matreal);
     gsl_matrix_free(expmatreal);
+    */
 }
 
 void WilsonLine::InitializeAsGslMatrix(gsl_matrix_complex* m)

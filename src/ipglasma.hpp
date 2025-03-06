@@ -29,11 +29,13 @@ public:
     
     // Evaluate dipole ampltitude, qaurks at coordinates x1 and x2
     // Array points are x and y coordinates
-    double Amplitude(double xpom, double q1[2], double q2[2]);
-    double AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] );
+    std::complex<double> ComplexAmplitude(double xpom, double q1[2], double q2[2]) const;
+    double Amplitude(double xpom, double q1[2], double q2[2]) const;
+    double AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] ) const;
 
-    WilsonLine& GetWilsonLine( double x, double y); // Find Wilson line at the given point (x,y) [GeV^-1]
-    
+    const WilsonLine& GetWilsonLine( double x, double y) const; // Find Wilson line at the given point (x,y) [GeV^-1]
+    const WilsonLine& GetWilsonLine(int i) const { return wilsonlines[i]; } 
+
     std::string InfoStr();
     
     double MinX();
@@ -45,12 +47,11 @@ public:
     
     std::vector<double> &GetXCoordinates();
 
-    void SetSchwinger(bool s, double rc=0);
-    void ApplyPeriodicBoundaryConditions(double q[2]); 
+    void ApplyPeriodicBoundaryConditions(double q[2]) const; 
 
-    std::vector<int> LatticeCoordinates(double x, double y);
-    int WilsonLineCoordinate(int  xind, int yind);
-    WilsonLine& GetWilsonLine(int i) { return wilsonlines[i]; }
+    std::vector<int> LatticeCoordinates(double x, double y) const;
+    int WilsonLineCoordinate(int  xind, int yind) const;
+    
 
     double X(int ix) { return xcoords[ix]; }
     double Y(int iy) { return ycoords[iy]; }

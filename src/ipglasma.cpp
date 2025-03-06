@@ -28,7 +28,7 @@ int FindIndex(double val, std::vector<double> &vec);
  * Search the closest grid point that corresponds to the given quark/antiquark coordinate
  * Then calcualte 1 - 1/Nc Tr U(quark) U^dagger(antiquark)
  */
-double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
+std::complex<double> IPGlasma::ComplexAmplitude(double xpom, double q1[2], double q2[2] ) const
 {
     ApplyPeriodicBoundaryConditions(q1);
     ApplyPeriodicBoundaryConditions(q2);
@@ -41,10 +41,10 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
         or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
     {
         if (periodic_boundary_conditions)
-            cerr << "WTF, I'm here..." << endl;
-            
-        return 0;
-        
+        {
+            cerr << "Periodic boundary conditions but we are outside the lattice in IPGlasma::ComplexAmplitude()?" << endl;
+            exit(1);
+        }
     } 
 
     double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
@@ -59,85 +59,38 @@ double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] )
     WilsonLine antiquark = GetWilsonLine(q2[0], q2[1]);
     
     //antiquark = antiquark.HermitianConjugate();
+
+    WilsonLine prod = quark.MultiplyByHermitianConjugate(antiquark);
     
-    WilsonLine prod;
-    try {
-        prod = quark.MultiplyByHermitianConjugate(antiquark);
-        //prod =  quark*antiquark;
-    } catch (...) {
-        cerr << "Matrix multiplication failed!" << endl;
-        cout << "Quark: " << q1[0] << ", " << q1[1] << endl;
-        cout << quark << endl;
-        cout << "Antiquark: " << q2[0] << ", " << q2[1] << endl;
-        cout << antiquark << endl;
-        exit(1);
-    }
     std::complex<double > amp =  1.0 - 1.0/NC * prod.Trace();
     
-    double result = amp.real();
-    if (result < 0) return 0;
-    return result;
-    if (result > 1)
-        return 1;
-    if (result < 0)
-        return 0;
+    // Force real part between 0 and 1
+    if (amp.real() > 1)
+        amp = std::complex<double>(1, amp.imag());
+    if (amp.real() < 0)
+        amp = std::complex<double>(0, amp.imag());
 
-    if (isnan(result))
+    if (isnan(amp.real()) or isnan(amp.imag()))
     {
         cerr << "Wilson line trance NaN, quark coords " << q1[0] << ", " << q1[1] << " and " << q2[0] << ", " << q2[1] << endl;
-	exit(1);
+	    exit(1);
     } 
      
-    return result;
+    return amp;
 }
-// Stupid copypaste
-double IPGlasma::AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] )
+
+double IPGlasma::Amplitude(double xpom, double q1[2], double q2[2] ) const
 {
-
-    ApplyPeriodicBoundaryConditions(q1);
-    ApplyPeriodicBoundaryConditions(q2);
-
-    // Out of grid? Return 1 (probably very large dipole)
-    if (q1[0] < xcoords[0] or q1[0] > xcoords[xcoords.size()-1]
-        or q1[1] < ycoords[0] or q1[1] > ycoords[ycoords.size()-1]
-        or q2[0] < xcoords[0] or q2[0] > xcoords[xcoords.size()-1]
-        or q2[1] < ycoords[0] or q2[1] > ycoords[ycoords.size()-1])
-        return 0;
-double  r = sqrt( pow(q1[0]-q2[0],2) + pow(q1[1]-q2[1],2));
-        if (r < std::abs( xcoords[1] - xcoords[0]))
-                        return 0;
-    
-    // First find corresponding grid indeces
-    WilsonLine quark = GetWilsonLine(q1[0], q1[1]);
-    WilsonLine antiquark = GetWilsonLine(q2[0], q2[1]);
-//    antiquark = antiquark.HermitianConjugate();
-    
-    WilsonLine prod;
-    try {
-        //prod =  quark*antiquark;
-        prod = quark.MultiplyByHermitianConjugate(antiquark);
-
-    } catch (...) {
-        cerr << "Matrix multiplication failed!" << endl;
-        cout << "Quark: " << q1[0] << ", " << q1[1] << endl;
-        cout << quark << endl;
-        cout << "Antiquark: " << q2[0] << ", " << q2[1] << endl;
-        cout << antiquark << endl;
-        exit(1);
-    }
-    std::complex<double > amp =  1.0 - 1.0/NC * prod.Trace();
-    
-    double result = amp.imag();
-    return result;
-    if (result > 1)
-        return 1;
-    if (result < 0)
-        return 0;
-    
-    return result;
+    return (ComplexAmplitude(xpom, q1, q2)).real();
 }
 
-WilsonLine& IPGlasma::GetWilsonLine(double x, double y)
+double IPGlasma::AmplitudeImaginaryPart(double xpom, double q1[2], double q2[2] ) const
+{
+    return (ComplexAmplitude(xpom, q1, q2)).imag();
+}
+
+
+const WilsonLine& IPGlasma::GetWilsonLine(double x, double y) const
 {
     double q[2]={x,y};
     ApplyPeriodicBoundaryConditions(q);
@@ -279,18 +232,6 @@ int IPGlasma::LoadData(std::string fname, double step, WilsonLineDataFileType ty
         cerr << "Grid size is " << xcoords.size() << " x " << ycoords.size() << ", this makes no sense! File " << fname << " - IPGlasma::LoadData" << endl;
         return -1;
     }
-    
-
-    
-    // Now, given that we have a point (x,y), we can find the index xind such that
-    // xcoords[xind] is closest to x, and similarly ind
-    // Then, the corresponding Wilson line is
-    // wilsonlines[ xcoords.size()*xind + yind]
-    // Of course this is symmetric and we could just as well swap xind and yind
-
-   SetSchwinger(false); 
-   // std::cout <<"# Loaded " << wilsonlines.size() << " Wilson lines from file " << datafile << ", grid size " << xcoords.size() << " x " << ycoords.size() << " grid range [" << xcoords[0] << ", " << xcoords[xcoords.size()-1] << "]" << " step size " << xcoords[1]-xcoords[0] << " GeV^-1" << std::endl;
-
         
     return 0;
 }
@@ -382,7 +323,6 @@ int IPGlasma::LoadBinaryData(std::string fname, double step)
         ycoords[i] -= center;
     }
     
-    SetSchwinger(false);
     return 0;
 }
 
@@ -403,7 +343,7 @@ double IPGlasma::XStep()
 }
 
 
-void IPGlasma::ApplyPeriodicBoundaryConditions(double q[2])
+void IPGlasma::ApplyPeriodicBoundaryConditions(double q[2]) const
 {
     
     if (periodic_boundary_conditions == false) return;
@@ -439,19 +379,8 @@ std::vector<double> &IPGlasma::GetXCoordinates()
     return xcoords;
 }
 
-void IPGlasma::SetSchwinger(bool s, double rc)
-{
-    schwinger = s;
-    schwinger_rc = rc;
 
-    if (s)
-    {
-        cerr << "NOTE: Schwinger Mechanism is not implemented in IPGlasma!" << endl;
-    }
-}
-
-
-std::vector<int> IPGlasma::LatticeCoordinates(double x, double y)
+std::vector<int> IPGlasma::LatticeCoordinates(double x, double y) const
 {
     std::vector<int> ret;
 
@@ -466,7 +395,7 @@ std::vector<int> IPGlasma::LatticeCoordinates(double x, double y)
     return std::vector<int> {ix, iy}; 
 }
 
-int IPGlasma::WilsonLineCoordinate(int  xind, int yind)
+int IPGlasma::WilsonLineCoordinate(int  xind, int yind) const
 {
     return xcoords.size()*xind + yind; 
 }

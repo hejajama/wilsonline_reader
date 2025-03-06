@@ -21,6 +21,9 @@ class WilsonLine
 public:
     WilsonLine();   // Initialize everything to 0
     WilsonLine(std::vector< std::vector< std::complex<double> > >  &d);
+
+    // If pointer to a gsl_matrix is provided, it should not be freed outside,
+    // this class will release the memory at the destructor
     WilsonLine(gsl_matrix_complex *m);
     WilsonLine(const WilsonLine &m);
     
