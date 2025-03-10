@@ -69,6 +69,8 @@ private:
     bool periodic_boundary_conditions;
     
     std::string datafile;
+
+    static const int NC=3;
     
     
 };

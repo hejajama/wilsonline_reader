@@ -18,7 +18,6 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-const int NC=3;
 
 int FindIndex(double val, std::vector<double> &vec);
 
