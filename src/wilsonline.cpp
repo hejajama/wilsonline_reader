@@ -30,7 +30,7 @@ void WilsonLine::Set(int row, int column, std::complex<double> value)
         return;
     }
 
-    operator()(row,column) = value;
+    data[row][column] = value;
 
 }
 
@@ -43,9 +43,9 @@ WilsonLine WilsonLine::operator*(WilsonLine& w)
         for (int j = 0; j < NC; ++j) {
             std::complex<double> sum(0.0, 0.0);
             for (int k = 0; k < NC; ++k) {
-                sum += operator()(i, k) * w(k, j);
+                sum += (*this)(i, k) * w(k, j);
             }
-            result(i, j)=sum;
+            result.Set(i, j,sum);
         }
     }
 
@@ -62,7 +62,7 @@ WilsonLine WilsonLine::MultiplyByHermitianConjugate(const WilsonLine& w)
         for (int j = 0; j < NC; ++j) {
             result(i, j) = 0;
             for (int k = 0; k < NC; ++k) {
-                result(i, j) += (*this)(i, k) * std::conj(w(j, k));
+                result.Set(i, j, result(i,j) + (*this)(i, k) * std::conj(w(j, k)));
             }
         }
     }
@@ -80,8 +80,13 @@ std::complex<double> WilsonLine::Trace() const {
 
 WilsonLine WilsonLine::operator*(std::complex<double> t)
 {
-    std::cerr << "Multiplication by a number not implemented" << endl;
-    exit(1);
+    WilsonLine result;
+    for (int i = 0; i < NC; ++i) {
+        for (int j = 0; j < NC; ++j) {
+            result.Set(i, j, (*this)(i, j) * t);
+        }
+    }
+    return result;
 }
 
 
@@ -90,7 +95,7 @@ WilsonLine WilsonLine::operator+(WilsonLine& w)
     WilsonLine result;
     for (int i = 0; i < NC; ++i) {
         for (int j = 0; j < NC; ++j) {
-            result(i, j) = (*this)(i,j)+w(i,j);
+            result.Set(i, j, (*this)(i,j)+w(i,j));
         }
     }
 
@@ -102,17 +107,25 @@ WilsonLine WilsonLine::operator+(WilsonLine& w)
 
 WilsonLine WilsonLine::ComplexConjugate()
 {
-
-    std::cerr << "WilsonLine:ComplexConjugate not yet implemented for GSL matrix" << endl;
-    exit(1);
+    WilsonLine result;
+    for (int i = 0; i < NC; ++i) {
+        for (int j = 0; j < NC; ++j) {
+            result.Set(i, j, std::conj((*this)(i, j)));
+        }
+    }
+    return result;
 
 }
 
 WilsonLine WilsonLine::Transpose()
 {
-
-    std::cerr << "WilsonLine:Transpose not yet implemented for GSL matrix" << endl;
-    exit(1);
+    WilsonLine result;
+    for (int i = 0; i < NC; ++i) {
+        for (int j = 0; j < NC; ++j) {
+            result.Set(i, j, (*this)(j, i));
+        }
+    }
+    return result;
 
 }
 

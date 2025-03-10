@@ -50,12 +50,12 @@ public:
             }
         }
     }
-
-    std::complex<double>& operator()(int row, int col) {
-        return data[row][col];
-    }
-
-    const std::complex<double>& operator()(int row, int col) const {
+    // Note: operator() does NOT return a reference, so this would NOT work:
+    // wilsonline(i,j)=1;
+    // This avoids potential situation where multiple matrices might have entries
+    // pointing into same memory location, but the drawback is that
+    // wilsonline(i,j)=1 is perfectly valid C++, but does not do anything...
+    std::complex<double> operator()(int row, int col) const {
         return data[row][col];
     }
 
