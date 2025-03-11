@@ -1,14 +1,12 @@
 /*
- * Diffraction at sub-nucleon scale
  * Wilson line / SU(3) matrix handling
- * Heikki Mäntysaari <heikki.mantysaari@jyu.fi>, 2015-2025
- * Standalone class, no external dependences, please!
  */
 
 #include "wilsonline.hpp"
 #include <vector>
 #include <complex>
 #include <iostream>
+#include <stdexcept>
 
 using std::cerr;
 using std::cout;
@@ -19,20 +17,39 @@ using std::endl;
 
 void WilsonLine::Set(int row, int column, std::complex<double> value)
 {
-    if (row >= NC)
+#ifndef DISABLE_OUT_OF_BOUND_CHECK
+    if (row >= NC or row < 0)
     {
-        cerr << "Invalid row index " << row << " num of rows in matrix " << NC << endl;
-        return;
+        throw std::out_of_range("Invalid row index " + std::to_string(row) +  ", num of rows in matrix:  "  + std::to_string(NC));
+        
     }
-    if (column >= NC )
+    if (column >= NC or column < 0)
     {
-        cerr << "Invalid column index " << column << " num of rows in matrix " << NC << endl;
-        return;
+        throw std::out_of_range("Invalid column index " + std::to_string(column) +  ", num of columns in matrix: "  + std::to_string(NC));
     }
+#endif
 
     data[row][column] = value;
 
 }
+
+std::complex<double> WilsonLine::operator()(int row, int column) const
+{
+#ifndef DISABLE_OUT_OF_BOUND_CHECK
+    if (row >= NC or row < 0)
+    {
+        throw std::out_of_range("Invalid row index " + std::to_string(row) +  ", num of rows in matrix:  "  + std::to_string(NC));
+        
+    }
+    if (column >= NC or column < 0)
+    {
+        throw std::out_of_range("Invalid column index " + std::to_string(column) +  ", num of columns in matrix: "  + std::to_string(NC));
+    }
+#endif 
+
+    return data[row][column];
+
+} 
 
 WilsonLine WilsonLine::operator*(WilsonLine& w)
 {

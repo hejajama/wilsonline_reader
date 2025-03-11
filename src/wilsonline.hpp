@@ -1,8 +1,6 @@
 /*
- * Diffraction at sub-nucleon scale
  * Wilson line / SU(3) matrix handling
- * Heikki Mäntysaari <mantysaari@bnl.gov>, 2015
- * Standalone class, no external dependences, please!
+ * Heikki Mäntysaari <heikki.mantysaari@jyu.fi>, 2015-2025
  */
 
 #ifndef wilsonline_hpp
@@ -28,8 +26,8 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-
-
+// Potential for slight performance boost if disable out of bound check
+//#define DISABLE_OUT_OF_BOUND_CHECK
 
 class WilsonLine 
 {
@@ -55,9 +53,7 @@ public:
     // This avoids potential situation where multiple matrices might have entries
     // pointing into same memory location, but the drawback is that
     // wilsonline(i,j)=1 is perfectly valid C++, but does not do anything...
-    std::complex<double> operator()(int row, int col) const {
-        return data[row][col];
-    }
+    std::complex<double> operator()(int row, int col) const; 
 
     WilsonLine MultiplyByHermitianConjugate(const WilsonLine other) const;
 

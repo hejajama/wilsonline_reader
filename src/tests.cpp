@@ -187,4 +187,20 @@ TEST(WilsonLineScalarMultiplication)
 }
 
 
+TEST(WilsonLineBounds)
+{
+    std::vector<std::vector<std::complex<double>>> matrix =  { {{1, 1}, {2, -1}, {3, 0}}, {{0, 1}, {1, -1}, {2, 2}}, {{1, 0}, {0, -1}, {1, 1}} };
+    WilsonLine w(matrix);
+
+    bool success=true;
+    try{ 
+        w.Set(4,1,1);
+    }
+    catch (const std::out_of_range& oor) {
+        success=false;
+        std::cerr << "Out of bounds error test: " << oor.what() << std::endl;
+    }
+    ASSERT_FALSE(success);
+}
+
 TEST_MAIN()
