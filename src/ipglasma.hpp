@@ -56,6 +56,8 @@ public:
     double X(int ix) { return xcoords[ix]; }
     double Y(int iy) { return ycoords[iy]; }
 
+    int GetN() const { return xcoords.size(); }
+
 private:
     
     
@@ -69,10 +71,11 @@ private:
     bool periodic_boundary_conditions;
     
     std::string datafile;
+
+    static const int NC=3;
     
     
 };
 
-const double FMGEV = 5.068;
 
 #endif /* ipglasma_hpp */
