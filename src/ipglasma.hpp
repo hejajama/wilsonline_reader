@@ -56,6 +56,8 @@ public:
     double X(int ix) { return xcoords[ix]; }
     double Y(int iy) { return ycoords[iy]; }
 
+    int GetN() const { return xcoords.size(); }
+
 private:
     
     
@@ -75,6 +77,5 @@ private:
     
 };
 
-const double FMGEV = 5.068;
 
 #endif /* ipglasma_hpp */
