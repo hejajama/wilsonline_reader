@@ -57,6 +57,8 @@ public:
     double Y(int iy) { return ycoords[iy]; }
 
     int GetN() const { return xcoords.size(); }
+    // Lattice spacing in GeV^-1
+    double GetLatticeSpacing() const { return xcoords[1]-xcoords[0]; }
 
 private:
     
