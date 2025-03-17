@@ -57,6 +57,7 @@ public:
     double Y(int iy) { return ycoords[iy]; }
 
     int GetN() const { return xcoords.size(); }
+    double GetLatticeSpacing() const { return xcoords[1]-xcoords[0]; }
 
 private:
     
